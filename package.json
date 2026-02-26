@@ -5,6 +5,7 @@
   "type": "module",
   "bin": {
     "skills": "./bin/cli.mjs",
+    "agents": "./bin/agents.mjs",
     "add-skill": "./bin/cli.mjs"
   },
   "files": [
