@@ -1666,6 +1666,19 @@ export async function runAdd(args: string[], options: AddOptions = {}): Promise<
         // When a subpath is given (e.g. owner/repo/agents/my-agent), use that specific
         // subdirectory instead of the whole repo root.
         const agentPath = parsed.subpath ? join(skillsDir, parsed.subpath) : skillsDir;
+
+        if (parsed.subpath && !existsSync(agentPath)) {
+          spinner.stop(pc.red(`Agent path not found`));
+          p.outro(
+            pc.red(
+              `Path not found in repository: ${parsed.subpath}\n` +
+                `  Make sure the path exists in the repository and try again.`
+            )
+          );
+          await cleanup(tempDir);
+          process.exit(1);
+        }
+
         const agentName =
           (parsed.subpath?.split('/').pop() ?? source ?? basename(skillsDir))
             .split('/')
