@@ -2,7 +2,7 @@ import * as p from '@clack/prompts';
 import pc from 'picocolors';
 import { existsSync } from 'fs';
 import { homedir } from 'os';
-import { sep } from 'path';
+import { sep, join, basename } from 'path';
 import { parseSource, getOwnerRepo, parseOwnerRepo, isRepoPrivate } from './source-parser.ts';
 import { searchMultiselect, cancelSymbol } from './prompts/search-multiselect.ts';
 
@@ -1662,16 +1662,19 @@ export async function runAdd(args: string[], options: AddOptions = {}): Promise<
 
     if (skills.length === 0) {
       if (process.env.IS_AGENTS_CLI === '1') {
-        // Agents don't require SKILL.md — install the repository itself as an agent
+        // Agents don't require SKILL.md — install the specified agent directory as an agent.
+        // When a subpath is given (e.g. owner/repo/agents/my-agent), use that specific
+        // subdirectory instead of the whole repo root.
+        const agentPath = parsed.subpath ? join(skillsDir, parsed.subpath) : skillsDir;
         const agentName =
-          (source ?? basename(skillsDir))
+          (parsed.subpath?.split('/').pop() ?? source ?? basename(skillsDir))
             .split('/')
             .pop()!
             .replace(/\.git$/, '') || basename(skillsDir);
         skills.push({
           name: agentName,
           description: '',
-          path: skillsDir,
+          path: agentPath,
           rawContent: '',
         });
       } else {
