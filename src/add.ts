@@ -36,7 +36,6 @@ import {
   isSkillInstalled,
   getInstallPath,
   getCanonicalPath,
-  installRemoteSkillForAgent,
   installWellKnownSkillForAgent,
   type InstallMode,
 } from './installer.ts';
@@ -55,11 +54,11 @@ import {
   type SkillAuditData,
   type PartnerAudit,
 } from './telemetry.ts';
-import { findProvider, wellKnownProvider, type WellKnownSkill } from './providers/index.ts';
-import { fetchMintlifySkill } from './mintlify.ts';
+import { wellKnownProvider, type WellKnownSkill } from './providers/index.ts';
 import {
   addSkillToLock,
   fetchSkillFolderHash,
+  getGitHubToken,
   isPromptDismissed,
   dismissPrompt,
   getLastSelectedAgents,
@@ -1625,12 +1624,6 @@ export async function runAdd(args: string[], options: AddOptions = {}): Promise<
       `Source: ${parsed.type === 'local' ? parsed.localPath! : parsed.url}${parsed.ref ? ` @ ${pc.yellow(parsed.ref)}` : ''}${parsed.subpath ? ` (${parsed.subpath})` : ''}${parsed.skillFilter ? ` ${pc.dim('@')}${pc.cyan(parsed.skillFilter)}` : ''}`
     );
 
-    // Handle direct URL skills (Mintlify, HuggingFace, etc.) via provider system
-    if (parsed.type === 'direct-url') {
-      await handleRemoteSkill(source, parsed.url, options, spinner);
-      return;
-    }
-
     // Handle well-known skills from arbitrary URLs
     if (parsed.type === 'well-known') {
       await handleWellKnownSkills(source, parsed.url, options, spinner);
@@ -2619,7 +2612,8 @@ export async function runAdd(args: string[], options: AddOptions = {}): Promise<
             let skillFolderHash = '';
             const skillPathValue = skillFiles[skill.name];
             if (parsed.type === 'github' && skillPathValue) {
-              const hash = await fetchSkillFolderHash(normalizedSource, skillPathValue);
+              const token = getGitHubToken();
+              const hash = await fetchSkillFolderHash(normalizedSource, skillPathValue, token);
               if (hash) skillFolderHash = hash;
             }
 
