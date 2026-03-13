@@ -369,6 +369,8 @@ npx aicore rm my-item
 **Skills** are reusable instruction sets that extend your coding agent's capabilities. They're defined in `SKILL.md`
 files with YAML frontmatter containing a `name` and `description`.
 
+Discover more Skills at **[skills.sh](https://skills.sh)**
+
 **Agents** (subagents) are specialized personas or automated workflows that can be "hired" to perform tasks.
 
 **AICores** are bundled packages that combine agents and skills in a standard directory layout, installable with a single `npx aicore` command.
@@ -378,8 +380,6 @@ They let agents perform specialized tasks like:
 - Generating release notes from git history
 - Creating PRs following your team's conventions
 - Integrating with external tools (Linear, Notion, etc.)
-
-Discover more at **[skills.sh](https://skills.sh)**
 
 ## Supported Agents
 

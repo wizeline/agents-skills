@@ -31,15 +31,16 @@ const VERSION = getVersion();
 initTelemetry(VERSION);
 
 const binaryName = process.env.IS_AGENTS_CLI
-  ? 'agents'
+  ? 'subagents'
   : process.env.IS_AICORE_CLI
     ? 'aicores'
     : 'skills';
-const alternativeBinary = process.env.IS_AGENTS_CLI ? 'skills' : 'agents';
-const SKILL = process.env.IS_AGENTS_CLI ? 'agent' : 'skill';
-const SKILLS = process.env.IS_AGENTS_CLI ? 'agents' : 'skills';
-const SkillCap = process.env.IS_AGENTS_CLI ? 'Agent' : 'Skill';
-const SkillsCap = process.env.IS_AGENTS_CLI ? 'Agents' : 'Skills';
+const alternativeBinary = process.env.IS_AGENTS_CLI ? 'skills' : 'subagents';
+const SKILL = process.env.IS_AGENTS_CLI ? 'subagent' : 'skill';
+const SKILLS = process.env.IS_AGENTS_CLI ? 'subagents' : 'skills';
+const SkillCap = process.env.IS_AGENTS_CLI ? 'Subagent' : 'Skill';
+const SkillsCap = process.env.IS_AGENTS_CLI ? 'Subagents' : 'Skills';
+const DEFAULT_PACKAGE = process.env.IS_AGENTS_CLI ? 'agent' : 'skill';
 
 const RESET = '\x1b[0m';
 const BOLD = '\x1b[1m';
@@ -57,12 +58,12 @@ const LOGO_LINES_SKILLS = [
 ];
 
 const LOGO_LINES_AGENTS = [
-  ' █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗',
-  '██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝',
-  '███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ███████╗',
-  '██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║',
-  '██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ███████║',
-  '╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝',
+  ' ██████╗██╗   ██╗██████╗  █████╗  ██████╗ ███████╗███╗   ██╗████████╗███████╗',
+  '██╔════╝██║   ██║██╔══██╗██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝██╔════╝',
+  '███████╗██║   ██║██████╔╝███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ███████╗',
+  '╚════██║██║   ██║██╔══██╗██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║',
+  '███████║╚██████╔╝██████╔╝██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ███████║',
+  '╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝',
 ];
 
 const LOGO_LINES_AICORE = [
@@ -103,7 +104,7 @@ function showBanner(): void {
   console.log();
   if (process.env.IS_AICORE_CLI) {
     console.log(
-      `  ${DIM}$${RESET} ${TEXT}npx ${binaryName} ${DIM}<package>${RESET}            ${DIM}Install an aicore (agents + skills)${RESET}`
+      `  ${DIM}$${RESET} ${TEXT}npx ${binaryName} ${DIM}<package>${RESET}            ${DIM}Install an aicore (subagents + skills)${RESET}`
     );
     console.log(
       `  ${DIM}$${RESET} ${TEXT}npx ${binaryName} add ${DIM}<package>${RESET}        ${DIM}Add a new ${SKILL}${RESET}`
@@ -141,28 +142,30 @@ function showBanner(): void {
   );
   console.log();
   if (process.env.IS_AICORE_CLI) {
-    console.log(`${DIM}try:${RESET} npx ${binaryName} wizeline/agent-skills`);
+    console.log(`${DIM}try:${RESET} npx ${binaryName} wizeline/${DEFAULT_PACKAGE}`);
   } else {
-    console.log(`${DIM}try:${RESET} npx ${binaryName} add wizeline/agent-skills`);
+    console.log(`${DIM}try:${RESET} npx ${binaryName} add wizeline/${DEFAULT_PACKAGE}`);
   }
-  console.log();
-  console.log(`Discover more ${SKILLS} at ${TEXT}https://skills.sh/${RESET}`);
-  console.log(
-    `${DIM}Note:${RESET} You can also use ${TEXT}npx ${alternativeBinary}${RESET} to manage ${alternativeBinary} specifically.`
-  );
+  if (!process.env.IS_AGENTS_CLI && !process.env.IS_AICORE_CLI) {
+    console.log();
+    console.log(`Discover more ${SKILLS} at ${TEXT}https://skills.sh/${RESET}`);
+    console.log(
+      `${DIM}Note:${RESET} You can also use ${TEXT}npx ${alternativeBinary}${RESET} to manage ${alternativeBinary} specifically.`
+    );
+  }
   console.log();
 }
 
 function showHelp(): void {
   const aicoreUsageLine = process.env.IS_AICORE_CLI
-    ? `  <package>            Install an aicore package (agents + skills)
+    ? `  <package>            Install an aicore package (subagents + skills)
                        e.g. wizeline/my-aicore
                             https://github.com/owner/my-aicore
-  add <package>        Add agents or skills from a package (alias: a)
+  add <package>        Add subagents or skills from a package (alias: a)
 `
     : `  add <package>        Add a ${SKILL} package (alias: a)
-                       e.g. wizeline/agent-skills
-                            https://github.com/wizeline/agent-skills
+                       e.g. wizeline/${DEFAULT_PACKAGE}
+                            https://github.com/wizeline/${DEFAULT_PACKAGE}
 `;
   console.log(`
 ${BOLD}Usage:${RESET} ${binaryName} <command> [options]
@@ -183,7 +186,7 @@ ${BOLD}Project:${RESET}
 
 ${BOLD}Add Options:${RESET}
   -g, --global           Install ${SKILL} globally (user-level) instead of project-level
-  -a, --agent <agents>   Specify agents to install to (use '*' for all agents)
+  -a, --agent <agents>   Specify subagents to install to (use '*' for all subagents)
   -s, --skill <${SKILLS}>   Specify ${SKILL} names to install (use '*' for all ${SKILLS})
   -l, --list             List available ${SKILLS} in the repository without installing
   -y, --yes              Skip confirmation prompts
@@ -193,18 +196,18 @@ ${BOLD}Add Options:${RESET}
 
 ${BOLD}Remove Options:${RESET}
   -g, --global           Remove from global scope
-  -a, --agent <agents>   Remove from specific agents (use '*' for all agents)
+  -a, --agent <agents>   Remove from specific subagents (use '*' for all subagents)
   -s, --skill <${SKILLS}>   Specify ${SKILLS} to remove (use '*' for all ${SKILLS})
   -y, --yes              Skip confirmation prompts
   --all                  Shorthand for --skill '*' --agent '*' -y
 
 ${BOLD}Experimental Sync Options:${RESET}
-  -a, --agent <agents>   Specify agents to install to (use '*' for all agents)
+  -a, --agent <agents>   Specify subagents to install to (use '*' for all subagents)
   -y, --yes              Skip confirmation prompts
 
 ${BOLD}List Options:${RESET}
   -g, --global           List global ${SKILLS} (default: project)
-  -a, --agent <agents>   Filter by specific agents
+  -a, --agent <agents>   Filter by specific subagents
   --json                 Output as JSON (machine-readable, no ANSI codes)
 
 ${BOLD}Options:${RESET}
@@ -212,10 +215,10 @@ ${BOLD}Options:${RESET}
   --version, -v     Show version number
 
 ${BOLD}Examples:${RESET}
-  ${DIM}$${RESET} ${binaryName} add wizeline/agent-skills
-  ${DIM}$${RESET} ${binaryName} add wizeline/agent-skills -g
-  ${DIM}$${RESET} ${binaryName} add wizeline/agent-skills --agent claude-code cursor
-  ${DIM}$${RESET} ${binaryName} add wizeline/agent-skills --skill pr-review commit
+  ${DIM}$${RESET} ${binaryName} add wizeline/${DEFAULT_PACKAGE}
+  ${DIM}$${RESET} ${binaryName} add wizeline/${DEFAULT_PACKAGE} -g
+  ${DIM}$${RESET} ${binaryName} add wizeline/${DEFAULT_PACKAGE} --agent claude-code cursor
+  ${DIM}$${RESET} ${binaryName} add wizeline/${DEFAULT_PACKAGE} --skill pr-review commit
   ${DIM}$${RESET} ${binaryName} remove                        ${DIM}# interactive remove${RESET}
   ${DIM}$${RESET} ${binaryName} remove web-design             ${DIM}# remove by name${RESET}
   ${DIM}$${RESET} ${binaryName} rm --global frontend-design
@@ -231,8 +234,7 @@ ${BOLD}Examples:${RESET}
   ${DIM}$${RESET} ${binaryName} experimental_sync              ${DIM}# sync from node_modules${RESET}
   ${DIM}$${RESET} ${binaryName} experimental_sync -y           ${DIM}# sync without prompts${RESET}
 
-Discover more ${SKILLS} at ${TEXT}https://skills.sh/${RESET}
-`);
+${!process.env.IS_AGENTS_CLI && !process.env.IS_AICORE_CLI ? `\nDiscover more ${SKILLS} at ${TEXT}https://skills.sh/${RESET}\n` : ''}`);
 }
 
 function showRemoveHelp(): void {
@@ -240,7 +242,7 @@ function showRemoveHelp(): void {
 ${BOLD}Usage:${RESET} ${binaryName} remove [${SKILLS}...] [options]
 
 ${BOLD}Description:${RESET}
-  Remove installed ${SKILLS} from agents. If no ${SKILL} names are provided,
+  Remove installed ${SKILLS} from subagents. If no ${SKILL} names are provided,
   an interactive selection menu will be shown.
 
 ${BOLD}Arguments:${RESET}
@@ -248,7 +250,7 @@ ${BOLD}Arguments:${RESET}
 
 ${BOLD}Options:${RESET}
   -g, --global       Remove from global scope (~/) instead of project scope
-  -a, --agent        Remove from specific agents (use '*' for all agents)
+  -a, --agent        Remove from specific subagents (use '*' for all subagents)
   -s, --skill        Specify ${SKILLS} to remove (use '*' for all ${SKILLS})
   -y, --yes          Skip confirmation prompts
   --all              Shorthand for --skill '*' --agent '*' -y
@@ -262,8 +264,7 @@ ${BOLD}Examples:${RESET}
   ${DIM}$${RESET} ${binaryName} remove --all                      ${DIM}# remove all ${SKILLS}${RESET}
   ${DIM}$${RESET} ${binaryName} remove --skill '*' -a cursor      ${DIM}# remove all ${SKILLS} from cursor${RESET}
 
-Discover more ${SKILLS} at ${TEXT}https://skills.sh/${RESET}
-`);
+${!process.env.IS_AGENTS_CLI && !process.env.IS_AICORE_CLI ? `\nDiscover more ${SKILLS} at ${TEXT}https://skills.sh/${RESET}\n` : ''}`);
 }
 
 function runInit(args: string[]): void {
@@ -417,8 +418,10 @@ Describe when this ${SKILL} should be used.
   console.log(
     `  ${DIM}URL:${RESET}     Host the file, then ${TEXT}npx ${binaryName} add https://example.com/${displayPath}${RESET}`
   );
-  console.log();
-  console.log(`Browse existing ${SKILLS} for inspiration at ${TEXT}https://skills.sh/${RESET}`);
+  if (!process.env.IS_AGENTS_CLI && !process.env.IS_AICORE_CLI) {
+    console.log();
+    console.log(`Browse existing ${SKILLS} for inspiration at ${TEXT}https://skills.sh/${RESET}`);
+  }
   console.log();
 }
 
